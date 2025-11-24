@@ -155,6 +155,12 @@ export default function PersonasPage() {
               try {
                 const data = JSON.parse(line.slice(6));
                 
+                // Check for errors first
+                if (data.error) {
+                  console.error('[Process] Error from stream:', data.error);
+                  throw new Error(data.error);
+                }
+                
                 // Update modal progress
                 if ((window as any).__updateProcessingProgress) {
                   (window as any).__updateProcessingProgress(data);
@@ -166,11 +172,11 @@ export default function PersonasPage() {
                   // Modal will close itself after showing completion
                   return;
                 }
-                if (data.error) {
-                  throw new Error(data.error);
-                }
               } catch (e) {
-                // Ignore parse errors
+                // If it's a real error, throw it; otherwise ignore parse errors
+                if (e instanceof Error && e.message && !e.message.includes('Unexpected token')) {
+                  throw e;
+                }
               }
             }
           }

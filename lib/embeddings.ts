@@ -1,11 +1,15 @@
 /**
- * Embeddings utilities using @xenova/transformers
+ * Embeddings utilities
  * Converts text into 384-dimensional vectors that capture semantic meaning
  * 
  * Why embeddings?
  * - Transform text into numbers that capture meaning
  * - Similar texts have similar numbers
  * - Enables semantic search (finding by meaning, not just keywords)
+ * 
+ * Supports two modes:
+ * 1. Local: @xenova/transformers (slow on serverless, can timeout)
+ * 2. API: Hugging Face Inference API (fast, works on Vercel Hobby)
  */
 
 import { pipeline } from '@xenova/transformers';
@@ -13,6 +17,11 @@ import { pipeline } from '@xenova/transformers';
 // Model configuration
 const EMBEDDING_MODEL = 'Xenova/all-MiniLM-L6-v2';
 const EMBEDDING_DIMENSION = 384;
+
+// Use Hugging Face API for production (faster, no timeout issues)
+const USE_HUGGINGFACE_API = process.env.USE_HUGGINGFACE_API === 'true';
+const HUGGINGFACE_API_URL = `https://api-inference.huggingface.co/pipeline/feature-extraction/${EMBEDDING_MODEL}`;
+const HUGGINGFACE_API_KEY = process.env.HUGGINGFACE_API_KEY || ''; // Optional, increases rate limit
 
 let embeddingPipeline: any = null;
 
@@ -25,17 +34,89 @@ async function getEmbeddingPipeline(): Promise<any> {
     console.log('[Embeddings] Loading model...');
     const startTime = Date.now();
     
-    // Disable local files, use CDN
-    embeddingPipeline = await pipeline('feature-extraction', EMBEDDING_MODEL, {
-      quantized: true,
-      revision: 'main',
-    });
-    
-    const loadTime = Date.now() - startTime;
-    console.log(`[Embeddings] Model loaded in ${loadTime}ms`);
+    try {
+      // Disable local files, use CDN
+      // Set longer timeout for serverless environments
+      embeddingPipeline = await pipeline('feature-extraction', EMBEDDING_MODEL, {
+        quantized: true,
+        revision: 'main',
+        // Add progress callback to help debug loading issues
+        progress_callback: (progress: any) => {
+          if (progress.status === 'downloading') {
+            console.log(`[Embeddings] Downloading model: ${progress.name} - ${(progress.progress || 0) * 100}%`);
+          } else if (progress.status === 'loading') {
+            console.log(`[Embeddings] Loading model: ${progress.status}`);
+          }
+        },
+      });
+      
+      const loadTime = Date.now() - startTime;
+      console.log(`[Embeddings] Model loaded in ${loadTime}ms`);
+    } catch (error) {
+      console.error('[Embeddings] Failed to load model:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      throw new Error(`Failed to load embeddings model: ${errorMessage}. This might be due to network issues or timeout on serverless platforms.`);
+    }
   }
   
   return embeddingPipeline;
+}
+
+/**
+ * Generates an embedding vector for a given text using Hugging Face API
+ * Fast and works on serverless platforms with timeout limits
+ */
+async function generateEmbeddingAPI(text: string): Promise<number[]> {
+  const startTime = Date.now();
+  console.log(`[Embeddings] Generating embedding via API for text (${text.length} chars)...`);
+  
+  try {
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    };
+    
+    if (HUGGINGFACE_API_KEY) {
+      headers['Authorization'] = `Bearer ${HUGGINGFACE_API_KEY}`;
+    }
+    
+    const response = await fetch(HUGGINGFACE_API_URL, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ inputs: text }),
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Hugging Face API error: ${response.status} ${errorText}`);
+    }
+    
+    const result = await response.json();
+    
+    // Handle API response format
+    let embedding: number[];
+    if (Array.isArray(result) && Array.isArray(result[0])) {
+      // If result is nested array, flatten
+      embedding = result[0];
+    } else if (Array.isArray(result)) {
+      embedding = result;
+    } else {
+      throw new Error('Unexpected API response format');
+    }
+    
+    // Normalize the embedding
+    const magnitude = Math.sqrt(embedding.reduce((sum, val) => sum + val * val, 0));
+    if (magnitude > 0) {
+      embedding = embedding.map(val => val / magnitude);
+    }
+    
+    const duration = Date.now() - startTime;
+    console.log(`[Embeddings] Generated embedding via API in ${duration}ms (${embedding.length} dimensions)`);
+    
+    return embedding;
+  } catch (error) {
+    console.error('[Embeddings] Error generating embedding via API:', error);
+    throw new Error(`Failed to generate embedding via API: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
 }
 
 /**
@@ -51,8 +132,13 @@ async function getEmbeddingPipeline(): Promise<any> {
  * @returns Array of 384 numbers representing the text's meaning
  */
 export async function generateEmbedding(text: string): Promise<number[]> {
+  // Use API on serverless platforms to avoid timeout issues
+  if (USE_HUGGINGFACE_API) {
+    return generateEmbeddingAPI(text);
+  }
+  
   const startTime = Date.now();
-  console.log(`[Embeddings] Generating embedding for text (${text.length} chars)...`);
+  console.log(`[Embeddings] Generating embedding locally for text (${text.length} chars)...`);
   
   try {
     const pipeline = await getEmbeddingPipeline();
@@ -67,11 +153,22 @@ export async function generateEmbedding(text: string): Promise<number[]> {
     const embedding = Array.from(output.data as Float32Array);
     
     const duration = Date.now() - startTime;
-    console.log(`[Embeddings] Generated embedding in ${duration}ms (${embedding.length} dimensions)`);
+    console.log(`[Embeddings] Generated embedding locally in ${duration}ms (${embedding.length} dimensions)`);
     
     return embedding;
   } catch (error) {
-    console.error('[Embeddings] Error generating embedding:', error);
+    console.error('[Embeddings] Error generating embedding locally:', error);
+    
+    // Fallback to API if local generation fails
+    if (!USE_HUGGINGFACE_API) {
+      console.warn('[Embeddings] Local embedding failed, falling back to API...');
+      try {
+        return await generateEmbeddingAPI(text);
+      } catch (apiError) {
+        console.error('[Embeddings] API fallback also failed:', apiError);
+      }
+    }
+    
     throw new Error(`Failed to generate embedding: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }

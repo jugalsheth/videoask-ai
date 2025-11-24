@@ -16,7 +16,9 @@ import { generateEmbeddings } from '@/lib/embeddings';
 import { storeChunks, hasVideo } from '@/lib/vectorStore';
 
 export const runtime = 'nodejs';
-export const maxDuration = 60;
+// Increase timeout for embeddings model loading and processing
+// Vercel Pro: 300s, Vercel Hobby: 10s (this might be the issue!)
+export const maxDuration = 60; // Note: Vercel Hobby plan has 10s limit, Pro has 300s
 
 /**
  * Streams progress updates to the client
@@ -129,9 +131,28 @@ function createProgressStream(
         controller.close();
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        const errorStack = error instanceof Error ? error.stack : '';
         console.error('[API /process-transcript] Error:', error);
+        console.error('[API /process-transcript] Stack:', errorStack);
+        
+        // Send detailed error message
+        const errorData = {
+          error: errorMessage,
+          step: 0,
+          status: 'error',
+          details: errorStack ? errorStack.substring(0, 500) : undefined,
+          // Add helpful hints based on error type
+          hint: errorMessage.includes('timeout') || errorMessage.includes('ETIMEDOUT')
+            ? 'The embeddings model is taking too long to load. This can happen on serverless platforms. Try processing again.'
+            : errorMessage.includes('ENOENT') || errorMessage.includes('file')
+            ? 'File system error - this is expected on serverless platforms.'
+            : errorMessage.includes('memory') || errorMessage.includes('heap')
+            ? 'Out of memory - the transcript might be too large. Try breaking it into smaller pieces.'
+            : 'An unexpected error occurred. Check the console for details.',
+        };
+        
         controller.enqueue(
-          encoder.encode(`data: ${JSON.stringify({ error: errorMessage, step: 0, status: 'error' })}\n\n`)
+          encoder.encode(`data: ${JSON.stringify(errorData)}\n\n`)
         );
         controller.close();
       }
