@@ -19,47 +19,58 @@ export async function GET(request: NextRequest) {
     
     if (personaId) {
       // Get specific persona
-      const persona = await getPersona(personaId);
-      if (!persona) {
+      try {
+        const persona = await getPersona(personaId);
+        if (!persona) {
+          return NextResponse.json(
+            { error: `Persona "${personaId}" not found. Make sure the transcript file exists in data/transcripts/` },
+            { status: 404 }
+          );
+        }
+        
+        // Check if processed
+        persona.processed = hasVideo(personaId);
+        
+        return NextResponse.json({ persona });
+      } catch (error) {
+        // If persona not found, return 404 with JSON
         return NextResponse.json(
-          { error: `Persona "${personaId}" not found. Make sure the transcript file exists in data/transcripts/` },
+          { error: `Persona "${personaId}" not found` },
           { status: 404 }
         );
       }
-      
-      // Check if processed
-      persona.processed = hasVideo(personaId);
-      
-      return NextResponse.json({ persona });
     }
     
-    // List all personas
-    const personas = await getAvailablePersonas();
+    // List all personas - gracefully handle filesystem errors on serverless
+    let personas: any[] = [];
+    try {
+      personas = await getAvailablePersonas();
+    } catch (error) {
+      // On serverless platforms (like Vercel), filesystem may not be available
+      // This is expected - just return empty array
+      console.warn('[API /personas] Could not load server-side personas (expected on serverless):', error);
+      personas = [];
+    }
     
     // Check which ones are processed
-    const personasWithStatus = await Promise.all(
-      personas.map(async (persona) => ({
-        ...persona,
-        processed: hasVideo(persona.id),
-      }))
-    );
+    const personasWithStatus = personas.map((persona) => ({
+      ...persona,
+      processed: hasVideo(persona.id),
+    }));
     
+    // Always return valid JSON with personas array (even if empty)
     return NextResponse.json({ personas: personasWithStatus });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    console.error('[API /personas] Error:', errorMessage, error);
+    console.error('[API /personas] Unexpected error:', errorMessage, error);
     
-    // Provide more helpful error messages
-    if (errorMessage.includes('ENOENT') || errorMessage.includes('no such file')) {
-      return NextResponse.json(
-        { error: 'Transcripts directory not found. Ensure data/transcripts/ folder exists in your repository.' },
-        { status: 500 }
-      );
-    }
-    
+    // Always return valid JSON, never HTML
     return NextResponse.json(
-      { error: `Failed to load personas: ${errorMessage}` },
-      { status: 500 }
+      { 
+        personas: [], // Return empty array so frontend doesn't break
+        error: 'Failed to load server-side personas (expected on serverless platforms). Use "Create Persona" to create personas via localStorage.' 
+      },
+      { status: 200 } // Return 200 so frontend can still show localStorage personas
     );
   }
 }

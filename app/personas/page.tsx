@@ -43,24 +43,55 @@ export default function PersonasPage() {
   const loadPersonas = async () => {
     try {
       const response = await fetch('/api/personas');
-      const data = await response.json();
-      const serverPersonas = data.personas || [];
+      
+      // Check if response is OK, but still try to parse JSON
+      let serverPersonas: Persona[] = [];
+      try {
+        const data = await response.json();
+        serverPersonas = data.personas || [];
+      } catch (parseError) {
+        // If JSON parsing fails, just use empty array
+        console.warn('Could not parse personas response (this is OK on serverless platforms)');
+        serverPersonas = [];
+      }
       
       // Load user-created personas from localStorage
-      const userPersonasStr = localStorage.getItem('userPersonas');
-      const userPersonas: Persona[] = userPersonasStr 
-        ? JSON.parse(userPersonasStr).map((p: any) => ({
-            id: p.id,
-            name: p.name,
-            description: p.description || `AI persona based on ${p.name} transcript`,
-            processed: false, // User personas need to be processed
-          }))
-        : [];
+      let userPersonas: Persona[] = [];
+      try {
+        const userPersonasStr = localStorage.getItem('userPersonas');
+        userPersonas = userPersonasStr 
+          ? JSON.parse(userPersonasStr).map((p: any) => ({
+              id: p.id,
+              name: p.name,
+              description: p.description || `AI persona based on ${p.name} transcript`,
+              processed: false, // User personas need to be processed
+            }))
+          : [];
+      } catch (localStorageError) {
+        console.warn('Could not load localStorage personas:', localStorageError);
+        userPersonas = [];
+      }
       
       // Combine server and user personas
       setPersonas([...serverPersonas, ...userPersonas]);
     } catch (error) {
       console.error('Error loading personas:', error);
+      // Even on error, try to load localStorage personas
+      try {
+        const userPersonasStr = localStorage.getItem('userPersonas');
+        const userPersonas: Persona[] = userPersonasStr 
+          ? JSON.parse(userPersonasStr).map((p: any) => ({
+              id: p.id,
+              name: p.name,
+              description: p.description || `AI persona based on ${p.name} transcript`,
+              processed: false,
+            }))
+          : [];
+        setPersonas(userPersonas);
+      } catch (e) {
+        // Last resort - just set empty array
+        setPersonas([]);
+      }
     } finally {
       setLoading(false);
     }
