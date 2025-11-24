@@ -6,7 +6,7 @@
 
 import { readdir, readFile } from 'fs/promises';
 import { join } from 'path';
-import { processManualTranscript } from './youtube';
+import { processManualTranscript } from './transcript';
 import { chunkTranscript } from './chunking';
 import { generateEmbeddings } from './embeddings';
 import { storeChunks } from './vectorStore';

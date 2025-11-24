@@ -1,6 +1,6 @@
 # VideoAsk AI - Learn AI by Using AI 🚀
 
-A Next.js 14 app that teaches you about RAG (Retrieval-Augmented Generation) by actually using it! Ask questions about any YouTube video and see exactly how the AI finds answers in real-time.
+A Next.js 14 app that teaches you about RAG (Retrieval-Augmented Generation) by actually using it! Create AI personas from transcripts and chat with them to see exactly how RAG finds answers in real-time.
 
 ## Features
 
@@ -95,7 +95,7 @@ components/
 lib/
 ├── embeddings.ts        # Xenova transformers
 ├── vectorStore.ts       # In-memory storage
-├── youtube.ts           # Transcript fetching
+├── transcript.ts        # Transcript processing
 ├── chunking.ts          # Text chunking
 └── groq.ts              # Groq integration
 ```

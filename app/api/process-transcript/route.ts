@@ -10,7 +10,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { processManualTranscript } from '@/lib/youtube';
+import { processManualTranscript } from '@/lib/transcript';
 import { chunkTranscript } from '@/lib/chunking';
 import { generateEmbeddings } from '@/lib/embeddings';
 import { storeChunks, hasVideo } from '@/lib/vectorStore';

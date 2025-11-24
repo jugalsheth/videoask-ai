@@ -38,7 +38,7 @@ const vectorStore = new Map<string, VectorChunk[]>();
 /**
  * Stores chunks with their embeddings for a video
  * 
- * @param videoId - YouTube video ID
+ * @param videoId - Persona/Video ID (used as key for storing chunks)
  * @param chunks - Array of chunks with text
  * @param embeddings - Array of embeddings (one per chunk)
  * @param metadata - Additional metadata (timestamps, etc.)

@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Play, Brain, Sparkles, Video, MessageSquare, Zap, ArrowRight, GraduationCap } from "lucide-react";
+import { Brain, Sparkles, MessageSquare, Zap, ArrowRight, GraduationCap } from "lucide-react";
 
 export default function LandingPage() {
     return (
@@ -33,7 +33,7 @@ export default function LandingPage() {
                                 <span className="text-indigo-500 dark:text-indigo-400"> AI</span>
                             </h1>
                             <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mt-4 leading-relaxed">
-                                Ask questions about any YouTube video and discover how AI finds the answers.
+                                Create AI personas from transcripts and discover how RAG finds the answers.
                             </p>
                         </motion.div>
 
@@ -45,9 +45,9 @@ export default function LandingPage() {
                             className="space-y-4"
                         >
                             {[
-                                { icon: Video, text: "Process YouTube videos instantly" },
+                                { icon: Sparkles, text: "Create AI personas from transcripts" },
                                 { icon: Brain, text: "Learn RAG & vector search" },
-                                { icon: MessageSquare, text: "Interactive Q&A with AI" },
+                                { icon: MessageSquare, text: "Interactive Q&A with AI personas" },
                                 { icon: Zap, text: "Real-time embeddings visualization" },
                                 { icon: GraduationCap, text: "Educational explanations" },
                             ].map((item, index) => {
@@ -76,14 +76,14 @@ export default function LandingPage() {
                             transition={{ duration: 0.6, delay: 0.7 }}
                             className="flex gap-4"
                         >
-                            <button className="group bg-indigo-500 hover:bg-indigo-600 text-white px-8 py-4 rounded-lg font-semibold text-lg shadow-sm hover:shadow transition-all flex items-center gap-2">
-                                Get Started
+                            <a href="/personas" className="group bg-indigo-500 hover:bg-indigo-600 text-white px-8 py-4 rounded-lg font-semibold text-lg shadow-sm hover:shadow transition-all flex items-center gap-2">
+                                Browse Personas
                                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                            </button>
-                            <button className="bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 px-8 py-4 rounded-lg font-semibold text-lg transition-all flex items-center gap-2">
-                                <Play className="w-5 h-5" />
-                                Watch Demo
-                            </button>
+                            </a>
+                            <a href="/create-persona" className="bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 px-8 py-4 rounded-lg font-semibold text-lg transition-all flex items-center gap-2">
+                                <Sparkles className="w-5 h-5" />
+                                Create Persona
+                            </a>
                         </motion.div>
 
                         {/* Stats */}
@@ -117,11 +117,13 @@ export default function LandingPage() {
                     >
                         {/* Main visual card */}
                         <div className="relative bg-white dark:bg-gray-900 rounded-xl p-8 border border-gray-200 dark:border-gray-800 shadow-sm">
-                            {/* Video player mockup */}
+                            {/* Persona example */}
                             <div className="bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 mb-6">
-                                <div className="aspect-video bg-gray-200 dark:bg-gray-700 flex items-center justify-center relative">
-                                    <div className="w-20 h-20 rounded-full bg-indigo-500 flex items-center justify-center">
-                                        <Play className="w-10 h-10 text-white ml-1" />
+                                <div className="aspect-video bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center relative">
+                                    <div className="text-center p-8">
+                                        <Sparkles className="w-16 h-16 text-white mx-auto mb-4" />
+                                        <p className="text-white font-semibold text-lg">AI Persona</p>
+                                        <p className="text-indigo-100 text-sm mt-2">Created from Transcript</p>
                                     </div>
                                 </div>
                             </div>

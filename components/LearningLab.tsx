@@ -104,7 +104,7 @@ export default function LearningLab({
                 <div className="text-sm text-indigo-600 dark:text-indigo-400 mb-1 font-medium tracking-tight">Chunks Searched</div>
                 <div className="text-2xl font-bold text-black dark:text-white tracking-tight">{chunksSearched}</div>
                 <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 font-medium leading-relaxed">
-                  Video transcript pieces compared
+                  Transcript chunks compared
                 </div>
               </div>
             )}

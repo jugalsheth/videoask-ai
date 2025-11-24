@@ -52,7 +52,7 @@ const concepts: Concept[] = [
     title: 'Text Chunking',
     description: 'Breaking long documents into smaller, manageable pieces for better retrieval and processing.',
     howItWorks: '1. Transcript is split into ~500 word chunks. 2. Overlap between chunks preserves context. 3. Each chunk gets its own embedding. 4. Chunks are stored with timestamps.',
-    example: 'A 1-hour video transcript becomes 50-100 chunks. When you ask a question, we search through these chunks to find the most relevant ones.',
+    example: 'A long transcript becomes 50-100 chunks. When you ask a question, we search through these chunks to find the most relevant ones.',
     icon: BookOpen,
     color: 'from-orange-500 to-amber-600',
   },
@@ -70,8 +70,8 @@ const concepts: Concept[] = [
     id: 'memvid',
     term: 'MemVid',
     title: 'MemVid Technology',
-    description: 'An optimized intermediate representation of video transcripts designed for high-speed vectorization and retrieval. Reduces processing time by 3x compared to standard methods.',
-    howItWorks: '1. Raw transcript is parsed into segments with timestamps. 2. Segments are structured into a "MemVid" format (optimized data structure). 3. This format allows for 3x faster chunking and embedding generation. 4. Enables real-time processing of long videos (1+ hours). 5. Maintains temporal relationships between segments.',
+    description: 'An optimized intermediate representation of transcripts designed for high-speed vectorization and retrieval. Reduces processing time by 3x compared to standard methods.',
+    howItWorks: '1. Raw transcript is parsed into segments with timestamps. 2. Segments are structured into a "MemVid" format (optimized data structure). 3. This format allows for 3x faster chunking and embedding generation. 4. Enables real-time processing of long transcripts. 5. Maintains temporal relationships between segments.',
     example: 'Think of MemVid as a pre-indexed version of a book. Instead of reading every page to find a topic, we can instantly jump to the right chapter. This optimization makes real-time RAG possible.',
     icon: Zap,
     color: 'from-yellow-500 to-orange-600',
@@ -175,7 +175,7 @@ export default function EducationalOverlay({ isOpen, onClose, conceptId }: Educa
                       <h2 className="text-3xl font-bold text-white mb-1">{concept.title}</h2>
                       <p className="text-sm text-gray-300 flex items-center gap-2">
                         <GraduationCap className="w-4 h-4" />
-                        Learn AI by using AI on real videos
+                        Learn AI by using AI with personas
                       </p>
                     </div>
                   </div>
@@ -288,7 +288,7 @@ export default function EducationalOverlay({ isOpen, onClose, conceptId }: Educa
               {/* Footer */}
               <div className="border-t border-white/10 p-4 bg-black/20">
                 <p className="text-center text-sm text-gray-400">
-                  💡 <span className="text-purple-400 font-medium">Pro tip:</span> Try asking questions about any YouTube video to see these concepts in action!
+                  💡 <span className="text-purple-400 font-medium">Pro tip:</span> Try asking questions to any persona to see these concepts in action!
                 </p>
               </div>
             </div>

@@ -26,7 +26,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: "VideoAsk AI - Learn AI by Using AI",
-  description: "Ask questions about any YouTube video and learn how RAG works in real-time",
+  description: "Create AI personas from transcripts and learn how RAG works in real-time",
 };
 
 export default function RootLayout({

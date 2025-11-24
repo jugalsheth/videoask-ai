@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Send, Video, ChevronDown, Menu, BookOpen, ArrowLeft, ChevronRight } from 'lucide-react';
+import { Send, User, ChevronDown, Menu, BookOpen, ArrowLeft, ChevronRight } from 'lucide-react';
 import ChatMessage from '@/components/ChatMessage';
 import HowItWorksModal from '@/components/HowItWorksModal';
 import LearningLab from '@/components/LearningLab';
@@ -12,7 +12,7 @@ import RAGProcessVisualizer from '@/components/RAGProcessVisualizer';
 
 /**
  * Chat Page
- * Main chat interface for asking questions about the processed video
+ * Main chat interface for asking questions about processed personas
  * Shows RAG process in action with educational features
  */
 
@@ -91,13 +91,8 @@ export default function ChatPage({ params }: { params: Promise<{ videoId: string
   }, []);
 
   const handleGoBack = () => {
-    // Check if this is a persona (not a YouTube video ID format)
-    const isPersona = !/^[a-zA-Z0-9_-]{11}$/.test(videoId);
-    if (isPersona) {
-      router.push('/personas');
-    } else {
-      router.push('/');
-    }
+    // Navigate back to personas page
+    router.push('/personas');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -133,11 +128,8 @@ export default function ChatPage({ params }: { params: Promise<{ videoId: string
         content: msg.content,
       }));
 
-      // Check if this is a persona (starts with persona- or is not a YouTube video ID format)
-      const isPersona = !/^[a-zA-Z0-9_-]{11}$/.test(videoId);
-      const personaName = isPersona
-        ? videoId.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
-        : undefined;
+      // Extract persona name from videoId (which is actually personaId)
+      const personaName = videoId.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 
       const response = await fetch('/api/ask', {
         method: 'POST',
@@ -280,11 +272,11 @@ export default function ChatPage({ params }: { params: Promise<{ videoId: string
         >
           <div className="mb-6">
             <div className="flex items-center gap-2 mb-4">
-              <Video className="w-5 h-5 text-indigo-500 dark:text-indigo-400" />
-              <h2 className="text-lg font-bold text-black dark:text-white">Video</h2>
+              <User className="w-5 h-5 text-indigo-500 dark:text-indigo-400" />
+              <h2 className="text-lg font-bold text-black dark:text-white">Persona</h2>
             </div>
             <div className="text-sm text-gray-600 dark:text-gray-300">
-              Video ID: <span className="text-indigo-500 dark:text-indigo-400 font-mono">{videoId}</span>
+              Persona ID: <span className="text-indigo-500 dark:text-indigo-400 font-mono">{videoId}</span>
             </div>
           </div>
 
@@ -321,7 +313,7 @@ export default function ChatPage({ params }: { params: Promise<{ videoId: string
               </h3>
               <div className="space-y-2">
                 {[
-                  'What is the main topic of this video?',
+                  'What is the main topic?',
                   'Summarize the key points',
                   'What are the most important insights?',
                 ].map((suggestion, index) => (
@@ -376,19 +368,16 @@ export default function ChatPage({ params }: { params: Promise<{ videoId: string
               </button>
               <ChevronRight className="w-4 h-4" />
               <button
-                onClick={() => {
-                  const isPersona = !/^[a-zA-Z0-9_-]{11}$/.test(videoId);
-                  router.push(isPersona ? '/personas' : '/');
-                }}
+                onClick={() => router.push('/personas')}
                 className="hover:text-black dark:hover:text-white transition-colors"
               >
-                {!/^[a-zA-Z0-9_-]{11}$/.test(videoId) ? 'Personas' : 'Videos'}
+                Personas
               </button>
               <ChevronRight className="w-4 h-4" />
               <span className="text-black dark:text-white">Chat</span>
             </div>
             
-            <h1 className="text-xl font-bold text-black dark:text-white ml-4">VideoAsk AI Chat</h1>
+            <h1 className="text-xl font-bold text-black dark:text-white ml-4">Chat with Persona</h1>
             <button
               onClick={() => {
                 setShowEducationalOverlay(true);
@@ -418,7 +407,7 @@ export default function ChatPage({ params }: { params: Promise<{ videoId: string
               animate={{ opacity: 1 }}
               className="text-center text-gray-600 dark:text-gray-400 mt-20"
             >
-              <p className="text-lg mb-2">Ask a question about the video!</p>
+              <p className="text-lg mb-2">Ask a question about this persona!</p>
               <p className="text-sm">Watch how RAG finds the answer in real-time.</p>
             </motion.div>
           )}
@@ -457,7 +446,7 @@ export default function ChatPage({ params }: { params: Promise<{ videoId: string
               type="text"
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
-              placeholder="Ask a question about the video..."
+              placeholder="Ask a question about this persona..."
               className="flex-1 px-4 py-3 rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-black dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               disabled={isStreaming}
             />

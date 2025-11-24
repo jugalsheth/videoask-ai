@@ -179,7 +179,7 @@ export default function HowItWorksModal({
                     Similarity Scores
                   </h3>
                   <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
-                    We compared your question embedding with all video chunks using
+                    We compared your question embedding with all transcript chunks using
                     cosine similarity:
                   </p>
                   <div className="space-y-2">

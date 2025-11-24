@@ -1,6 +1,6 @@
 /**
  * API Route: /api/ask
- * Answers questions about a processed video using RAG
+ * Answers questions about a processed persona using RAG
  * 
  * Process:
  * 1. Generate question embedding
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
 
     if (!videoId || !question) {
       return NextResponse.json(
-        { error: 'Video ID and question are required' },
+        { error: 'Persona ID and question are required' },
         { status: 400 }
       );
     }
