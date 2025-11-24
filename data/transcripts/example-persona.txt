@@ -1,0 +1,23 @@
+This is an example transcript file. Replace this with actual transcript content.
+
+To get transcripts:
+1. YouTube: Click three dots → Show transcript → Copy all
+2. Podcasts: Check show notes or transcript pages
+3. Videos: Look for CC/Transcript options
+4. AI Services: Use Otter.ai, Rev.com, or Descript
+
+Save your transcript here as: persona-name.txt
+
+The app will automatically:
+- Parse the transcript
+- Create chunks with overlap
+- Generate embeddings (384 dimensions)
+- Store in vector database
+- Enable RAG-based Q&A
+
+Example questions you can ask:
+- "What are the main topics discussed?"
+- "Summarize the key points"
+- "What did they say about [topic]?"
+- "Explain [concept] in detail"
+
